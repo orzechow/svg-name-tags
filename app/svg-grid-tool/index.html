@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Grid Name Tool</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    .input-group { margin-bottom: 1em; }
+    textarea { width: 100%; height: 6em; }
+    #svg-preview { border: 1px solid #ccc; margin-top: 1em; max-width: 100%; }
+    .row { display: flex; gap: 1em; }
+    .col { flex: 1; }
+    label { font-weight: bold; }
+    button { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>SVG Grid Name Tool</h1>
+  <div class="input-group">
+    <label for="svg-template">SVG Template (upload):</label>
+    <input type="file" id="svg-template" accept="image/svg+xml">
+  </div>
+  <div class="input-group">
+    <label for="names">Names (one per line):</label>
+    <textarea id="names" placeholder="Enter names here..."></textarea>
+  </div>
+  <div class="row">
+    <div class="col">
+      <label for="max-width">Max Width (cm):</label>
+      <input type="number" id="max-width" value="10" min="1" step="0.1">
+    </div>
+    <div class="col">
+      <label for="max-height">Max Height (cm):</label>
+      <input type="number" id="max-height" value="5" min="1" step="0.1">
+    </div>
+    <!-- Columns input removed: columns are now auto-calculated -->
+  </div>
+  <button id="generate">Generate SVG Grid</button>
+  <a id="download-link" style="display:none;" download="names-grid.svg">Download SVG</a>
+  <div id="svg-preview"></div>
+  <script src="main.js"></script>
+</body>
+</html>
