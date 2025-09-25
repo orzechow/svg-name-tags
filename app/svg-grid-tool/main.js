@@ -75,8 +75,8 @@ function setTextAndFit(svg, name) {
     return;
   }
   // Get user max font size and max name width (in cm)
-  const maxFontSizeCm = parseFloat(document.getElementById('max-font-size').value) || 1;
-  const maxNameWidthCm = parseFloat(document.getElementById('max-name-width').value) || 3;
+  const maxFontSizeCm = validateNumberInput('max-font-size', 0.1, 100, 1);
+  const maxNameWidthCm = validateNumberInput('max-name-width', 0.1, 100, 3);
   const maxFontSizePx = cmToPx(maxFontSizeCm);
   const maxNameWidthPx = cmToPx(maxNameWidthCm);
   fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx);
@@ -112,13 +112,14 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     showError('Please upload an SVG template.');
     return;
   }
+
   // Normalize template: move all children so bounding box is at (0,0)
   const bbox = getTemplateBBox(svgTemplateDoc);
 
   // Get template size
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
   const templateHeight = parseFloat(svgTemplateDoc.getAttribute('height')) || 30;
-  const cloneWidthCm = parseFloat(document.getElementById('clone-width').value) || 3;
+  const cloneWidthCm = validateNumberInput('clone-width', 0.1, 100, 3);
   const cloneWidth = cmToPx(cloneWidthCm);
   const scaleClone = cloneWidth / templateWidth;
   const cellWidth = cloneWidth;
@@ -178,10 +179,19 @@ function downloadSVG() {
   link.style.display = 'inline-block';
 }
 
+function validateNumberInput(id, min, max, fallback) {
+  const val = parseFloat(document.getElementById(id).value);
+  if (isNaN(val) || val < min || val > max) {
+    showError(`Invalid value for ${id.replace('-', ' ')}. Using fallback: ${fallback}`);
+    return fallback;
+  }
+  return val;
+}
+
 document.getElementById('generate').addEventListener('click', () => {
   const names = getNames();
-  const maxWidth = cmToPx(parseFloat(document.getElementById('max-width').value) || 10);
-  const maxHeight = cmToPx(parseFloat(document.getElementById('max-height').value) || 5);
+  const maxWidth = cmToPx(validateNumberInput('max-width', 0.1, 100, 10));
+  const maxHeight = cmToPx(validateNumberInput('max-height', 0.1, 100, 5));
   showPreview(names, maxWidth, maxHeight);
   downloadSVG();
 });
