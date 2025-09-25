@@ -48,10 +48,6 @@ function cmToPx(cm) {
   return cm * 37.7952755906;
 }
 
-function cloneSVGElement(el) {
-  return el.cloneNode(true);
-}
-
 function setTextAndFit(svg, name) {
   // Find the text element (assume only one)
   const textEl = svg.querySelector('text');
@@ -76,12 +72,6 @@ function setTextAndFit(svg, name) {
     fontSize -= 0.2;
     textEl.style.fontSize = fontSize + 'px';
   }
-}
-
-function convertTextToPath(svg) {
-  // This requires a library or server-side tool (e.g. Opentype.js, SVGPathConverter, or Inkscape)
-  // For now, we leave as text and warn the user
-  // TODO: Integrate text-to-path conversion (client-side is complex)
 }
 
 function buildLiveSVGGrid(names, maxWidth, maxHeight) {
@@ -144,7 +134,6 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     outSvg.appendChild(g);
 
     setTextAndFit(g, name);
-    convertTextToPath(g);
   });
   return outSvg;
 }
