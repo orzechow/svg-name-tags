@@ -37,9 +37,17 @@ function pxToCm(px) {
  */
 function validateNumberInput(id, min, max, fallback) {
   const val = parseFloat(document.getElementById(id).value);
-  if (isNaN(val) || val < min || val > max) {
+  if (isNaN(val)) {
     showError(`Invalid value for ${id.replace('-', ' ')}. Using fallback: ${fallback}`);
     return fallback;
+  }
+  if (val < min) {
+    showError(`Value for ${id.replace('-', ' ')} too small. Clamped to ${min}.`);
+    return min;
+  }
+  if (val > max) {
+    showError(`Value for ${id.replace('-', ' ')} too large. Clamped to ${max}.`);
+    return max;
   }
   return val;
 }
