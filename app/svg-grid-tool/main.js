@@ -48,6 +48,17 @@ function cmToPx(cm) {
   return cm * 37.7952755906;
 }
 
+function fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx) {
+  textEl.textContent = name;
+  let fontSize = maxFontSizePx;
+  textEl.style.fontSize = fontSize + 'px';
+  // Shrink font size until it fits within max name width
+  while (textEl.getBBox().width > maxNameWidthPx && fontSize > 1) {
+    fontSize -= 0.2;
+    textEl.style.fontSize = fontSize + 'px';
+  }
+}
+
 function setTextAndFit(svg, name) {
   // Find the text element (assume only one)
   const textEl = svg.querySelector('text');
@@ -55,23 +66,12 @@ function setTextAndFit(svg, name) {
     console.log('No text element found in SVG.');
     return;
   }
-  textEl.textContent = name;
   // Get user max font size and max name width (in cm)
   const maxFontSizeCm = parseFloat(document.getElementById('max-font-size').value) || 1;
   const maxNameWidthCm = parseFloat(document.getElementById('max-name-width').value) || 3;
   const maxFontSizePx = cmToPx(maxFontSizeCm);
   const maxNameWidthPx = cmToPx(maxNameWidthCm);
-  // Set initial font size to max
-  let fontSize = maxFontSizePx;
-  textEl.style.fontSize = fontSize + 'px';
-
-  const dbg_w = textEl.getBBox().width;
-
-  // Shrink font size until it fits within max name width
-  while (textEl.getBBox().width > maxNameWidthPx && fontSize > 1) {
-    fontSize -= 0.2;
-    textEl.style.fontSize = fontSize + 'px';
-  }
+  fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx);
 }
 
 function buildLiveSVGGrid(names, maxWidth, maxHeight) {
