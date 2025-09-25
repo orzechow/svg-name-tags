@@ -3,6 +3,7 @@
 
 let svgTemplateString = '';
 let svgTemplateDoc = null;
+const svgNS = 'http://www.w3.org/2000/svg';
 
 // Handle SVG template upload
 const svgInput = document.getElementById('svg-template');
@@ -51,6 +52,21 @@ function convertTextToPath(svg) {
 }
 
 function generateGridSVG(names, maxWidth, maxHeight) {
+  // --- Normalize template: move all children so bounding box is at (0,0) ---
+  // Create a temporary SVG to measure the bounding box
+  const tempSvg = document.createElementNS(svgNS, 'svg');
+  for (const child of Array.from(svgTemplateDoc.children)) {
+    const childClone = child.cloneNode(true);
+    tempSvg.appendChild(childClone);
+  }
+  document.body.appendChild(tempSvg); // Attach to DOM to getBBox
+  let bbox = { x: 0, y: 0 };
+  try {
+    bbox = tempSvg.getBBox();
+  } catch (e) {}
+  document.body.removeChild(tempSvg);
+
+  // Now, for each clone, wrap children in a <g> and translate by -bbox.x, -bbox.y
   if (!svgTemplateDoc) {
     alert('Please upload an SVG template.');
     return '';
@@ -58,42 +74,53 @@ function generateGridSVG(names, maxWidth, maxHeight) {
   // Get template size
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
   const templateHeight = parseFloat(svgTemplateDoc.getAttribute('height')) || 30;
-  // Calculate columns to fit maxWidth
-  const columns = Math.max(1, Math.floor(maxWidth / templateWidth));
+  // Get user target width per clone (in px)
+  const cloneWidthCm = parseFloat(document.getElementById('clone-width').value) || 3;
+  const cloneWidth = cmToPx(cloneWidthCm);
+  // Calculate scale for each clone
+  const scaleClone = cloneWidth / templateWidth;
+  const cellWidth = cloneWidth;
+  const cellHeight = templateHeight * scaleClone;
+  const columns = Math.max(1, Math.floor(maxWidth / cellWidth));
   const rows = Math.ceil(names.length / columns);
-  // Calculate scale to fit grid in maxWidth/maxHeight
-  const cellWidth = templateWidth;
-  const cellHeight = templateHeight;
   const gridWidth = columns * cellWidth;
   const gridHeight = rows * cellHeight;
-  const scaleX = maxWidth / gridWidth;
-  const scaleY = maxHeight / gridHeight;
-  const scale = Math.min(scaleX, scaleY, 1);
+  // (Removed old scaleX/scaleY/scale for grid scaling)
   // Create SVG root
-  const svgNS = 'http://www.w3.org/2000/svg';
   const outSvg = document.createElementNS(svgNS, 'svg');
-  outSvg.setAttribute('width', maxWidth);
-  outSvg.setAttribute('height', maxHeight);
-  outSvg.setAttribute('viewBox', `0 0 ${maxWidth} ${maxHeight}`);
+  outSvg.setAttribute('width', gridWidth);
+  outSvg.setAttribute('height', gridHeight);
+  outSvg.setAttribute('viewBox', `0 0 ${gridWidth} ${gridHeight}`);
+  outSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   // Place each name
+  // Determine if scaling is needed based on viewBox vs width/height
+  // scaleX/scaleY not needed, use scaleClone for uniform scaling
+  // Optionally, offset grid to always start at (0,0)
+  let offsetX = 0;
+  let offsetY = 0;
+  // (If you want to center the grid in a larger area, set offsetX/Y here)
   names.forEach((name, i) => {
     const row = Math.floor(i / columns);
     const col = i % columns;
+    // Create a group for the normalized template
     const g = document.createElementNS(svgNS, 'g');
-    const templateClone = cloneSVGElement(svgTemplateDoc);
-    // Ensure the clone has correct width/height and viewBox for scaling
-    templateClone.setAttribute('width', templateWidth);
-    templateClone.setAttribute('height', templateHeight);
-    if (!templateClone.getAttribute('viewBox')) {
-      templateClone.setAttribute('viewBox', `0 0 ${templateWidth} ${templateHeight}`);
+    const innerG = document.createElementNS(svgNS, 'g');
+    innerG.setAttribute('transform', `translate(${-bbox.x},${-bbox.y})`);
+    for (const child of Array.from(svgTemplateDoc.children)) {
+      const childClone = child.cloneNode(true);
+      innerG.appendChild(childClone);
     }
-    setTextAndFit(templateClone, name);
-    convertTextToPath(templateClone);
-    g.appendChild(templateClone);
-    // The translation must be by col*cellWidth*scale, row*cellHeight*scale, but since we scale the group, we translate by col*cellWidth, row*cellHeight and then scale
-    const tx = col * cellWidth;
-    const ty = row * cellHeight;
-    g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+    g.appendChild(innerG);
+    setTextAndFit(g, name);
+    convertTextToPath(g);
+    // Place at grid position
+    const tx = offsetX + col * cellWidth;
+    const ty = offsetY + row * cellHeight;
+    let transform = `translate(${tx},${ty})`;
+    if (scaleClone !== 1) {
+      transform += ` scale(${scaleClone})`;
+    }
+    g.setAttribute('transform', transform);
     outSvg.appendChild(g);
   });
   return outSvg.outerHTML;

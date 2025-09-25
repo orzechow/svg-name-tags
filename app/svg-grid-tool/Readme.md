@@ -15,7 +15,11 @@ This web tool allows you to generate a grid of name tags from an SVG template.
 3. Enter names (one per line).
 4. Set grid options (width, height, columns).
 5. Click "Generate SVG Grid".
+
 6. Download the result.
+
+## New Feature
+- You can now set the target width (in cm) for each clone. The tool will scale each template to this width.
 
 **Note:**
 - The text is not converted to paths in the browser (due to browser limitations). For production, use Inkscape or a similar tool to convert text to paths if needed.
