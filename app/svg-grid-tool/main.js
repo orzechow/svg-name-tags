@@ -39,8 +39,16 @@ svgInput.addEventListener('change', async (e) => {
   }
 });
 
+function showError(message) {
+  alert(message);
+}
+
 function getNames() {
-  return document.getElementById('names').value.split('\n').map(n => n.trim()).filter(Boolean);
+  const names = document.getElementById('names').value.split('\n').map(n => n.trim()).filter(Boolean);
+  if (names.length === 0) {
+    showError('Please enter at least one name.');
+  }
+  return names;
 }
 
 function cmToPx(cm) {
@@ -63,7 +71,7 @@ function setTextAndFit(svg, name) {
   // Find the text element (assume only one)
   const textEl = svg.querySelector('text');
   if (!textEl) {
-    console.log('No text element found in SVG.');
+    showError('No text element found in SVG template.');
     return;
   }
   // Get user max font size and max name width (in cm)
@@ -100,6 +108,10 @@ function createNormalizedTemplateGroup(svgTemplateDoc, bbox) {
 }
 
 function buildLiveSVGGrid(names, maxWidth, maxHeight) {
+  if (!svgTemplateDoc) {
+    showError('Please upload an SVG template.');
+    return;
+  }
   // Normalize template: move all children so bounding box is at (0,0)
   const bbox = getTemplateBBox(svgTemplateDoc);
 
