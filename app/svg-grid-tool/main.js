@@ -191,7 +191,7 @@ function createNormalizedTemplateGroup(svgTemplateDoc, bbox) {
  */
 function buildLiveSVGGrid(names, maxWidth, maxHeight) {
   if (!svgTemplateDoc) {
-    showError('Please upload an SVG template.');
+    // showError('Please upload an SVG template.');
     return;
   }
 
