@@ -18,7 +18,7 @@ svgInput.addEventListener('change', async (e) => {
   if (textEl) {
     // Set max-font-size field to template font size (in cm)
     const fontSizePx = parseFloat(textEl.getAttribute('font-size')) || 20;
-    const fontSizeCm = fontSizePx / 37.7952755906;
+    const fontSizeCm = pxToCm(fontSizePx);
     document.getElementById('max-font-size').value = fontSizeCm.toFixed(2);
     document.getElementById('max-font-size').max = (fontSizeCm * 2).toFixed(2);
 
@@ -33,7 +33,7 @@ svgInput.addEventListener('change', async (e) => {
     } catch (err) { }
     document.body.removeChild(tempSvg);
     // Convert px to cm for the field
-    const textWidthCm = textWidth / 37.7952755906;
+    const textWidthCm = pxToCm(textWidth);
     document.getElementById('max-name-width').value = textWidthCm.toFixed(2);
     document.getElementById('max-name-width').max = (textWidthCm * 2).toFixed(2);
   }
@@ -54,6 +54,11 @@ function getNames() {
 function cmToPx(cm) {
   // 1cm = 37.7952755906px (SVG standard)
   return cm * 37.7952755906;
+}
+
+function pxToCm(px) {
+  // 1cm = 37.7952755906px (SVG standard)
+  return px / 37.7952755906;
 }
 
 function fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx) {
