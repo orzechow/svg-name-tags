@@ -1,29 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SVG Grid Name Tool</title>
+  <title>SVG Grid Name Tag Tool</title>
+  <link rel="stylesheet" href="./mvp.css">
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    .input-group { margin-bottom: 1em; }
-    textarea { width: 100%; height: 6em; }
-    #svg-preview { border: 1px solid #ccc; margin-top: 1em; max-width: 100%; }
-    .row { display: flex; gap: 1em; }
-    .col { flex: 1; }
-    label { font-weight: bold; }
-    button { margin-top: 1em; }
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+    }
+    main {
+      max-width: 100%;
+    }
+    #names{
+      height: 10em;
+    }
+    #preview-aside {
+      width: inherit;
+      min-width: var(--width-card);
+      width: 49%;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    #preview-aside svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
   </style>
 </head>
+
 <body>
-  <h1>SVG Grid Name Tool</h1>
-  <div class="input-group">
-    <label for="svg-template">SVG Template (upload):</label>
-    <input type="file" id="svg-template" accept="image/svg+xml">
-  </div>
-  <div class="input-group">
-    <label for="names">Names (one per line):</label>
-    <textarea id="names" placeholder="Enter names here...">Max
+  <main>
+    <header>
+      <h1>SVG Grid Name Tag Tool</h1>
+      <p>Create a printable SVG grid with name tags from a template and a list of names.</p>
+    </header>
+    <section>
+      <article open style="margin-bottom:1.5em;">
+        <summary><strong>How to prepare your SVG template (Inkscape):</strong></summary>
+        <ul>
+          <li>Create your SVG template in Inkscape. <br>
+            <em>Make sure it contains one text element with a placeholder name.</em><br>
+            <em>Do <strong>not</strong> convert the name text field to paths.</em>
+          </li>
+          <li>Save your template as <strong>plain SVG</strong> (not as Inkscape SVG).</li>
+        </ul>
+      </article>
+      </section>
+      <section>
+      <form>
+        <label for="svg-template">SVG Template</label>
+        <input type="file" id="svg-template" accept="image/svg+xml">
+        <label for="names">Name List (one per line)</label>
+        <textarea id="names" placeholder="Enter names here...">Max
 Paul
 Anna
 Maximilian
@@ -34,32 +66,25 @@ Maria-Theresia
 Anna-Sophia-Louise
 Chandrashekar
 Mohammad</textarea>
-  </div>
-  <div class="row">
-    <div class="col">
-      <label for="max-width">Max Page Width (cm):</label>
-      <input type="number" id="max-width" value="10" min="1" step="0.1">
-    </div>
-    <div class="col">
-      <label for="max-height">Max Page Height (cm):</label>
-      <input type="number" id="max-height" value="5" min="1" step="0.1">
-    </div>
-    <div class="col">
-      <label for="clone-width">Clone Width (cm):</label>
-      <input type="number" id="clone-width" value="3" min="0.1" step="0.1">
-    </div>
-    <div class="col">
-      <label for="max-font-size">Max Font Size:</label>
-      <input type="range" id="max-font-size" value="1" min="0.1" max="100" step="0.01">
-    </div>
-    <div class="col">
-      <label for="max-name-width">Max Name Width:</label>
-      <input type="range" id="max-name-width" value="3" min="0.1" max="100" step="0.01">
-    </div>
-  </div>
-  <button id="generate">Generate SVG Grid</button>
-  <a id="download-link" style="display:none;" download="names-grid.svg">Download SVG</a>
-  <div id="svg-preview"></div>
+        <label for="max-width">Max. Grid Width (cm)</label>
+        <input type="number" id="max-width" min="1" max="100" value="10" step="0.1">
+        <label for="max-height">Max. Grid Height (cm)</label>
+        <input type="number" id="max-height" min="1" max="100" value="5" step="0.1">
+        <label for="clone-width">Name Tag Width (cm)</label>
+        <input type="number" id="clone-width" min="1" max="100" value="3" step="0.1">
+        <label for="max-font-size">Font Size</label>
+        <input type="range" id="max-font-size" min="0.1" max="100" value="1" step="0.01">
+        <label for="max-name-width">Max. Name Width</label>
+        <input type="range" id="max-name-width" min="0.1" max="100" value="3" step="0.01">
+        <a id="download-link" download="names-grid.svg" href="#"><b>Download SVG</b></a>
+        </form>
+        <aside id="preview-aside">
+          <h2>Preview</h2>
+          <div id="svg-preview"></div>
+      </aside>
+      </section>
+      </main>
   <script src="main.js"></script>
 </body>
+
 </html>
