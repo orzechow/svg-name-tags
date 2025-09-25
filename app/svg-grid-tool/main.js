@@ -186,10 +186,9 @@ function createNormalizedTemplateGroup(svgTemplateDoc, bbox) {
  * Build the SVG grid in the DOM for preview and download
  * @param {string[]} names
  * @param {number} maxWidth
- * @param {number} maxHeight
  * @returns {SVGElement}
  */
-function buildLiveSVGGrid(names, maxWidth, maxHeight) {
+function buildLiveSVGGrid(names, maxWidth) {
   if (!svgTemplateDoc) {
     // showError('Please upload an SVG template.');
     return;
@@ -248,10 +247,9 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
  * Show the SVG grid preview
  * @param {string[]} names
  * @param {number} maxWidth
- * @param {number} maxHeight
  */
-function showPreview(names, maxWidth, maxHeight) {
-  buildLiveSVGGrid(names, maxWidth, maxHeight);
+function showPreview(names, maxWidth) {
+  buildLiveSVGGrid(names, maxWidth);
 }
 
 /**
@@ -274,7 +272,7 @@ function downloadSVG() {
 // Auto-update setup
 function setupAutoUpdate() {
   const inputIds = [
-    'names', 'max-width', 'max-height', 'clone-width', 'max-font-size', 'max-name-width'
+    'names', 'max-width', 'clone-width', 'max-font-size', 'max-name-width'
   ];
   inputIds.forEach(id => {
     const el = document.getElementById(id);
@@ -286,8 +284,7 @@ function setupAutoUpdate() {
 function updateSVGGrid() {
   const names = getNames();
   const maxWidth = cmToPx(validateNumberInput('max-width', 0.1, 100, 10));
-  const maxHeight = cmToPx(validateNumberInput('max-height', 0.1, 100, 5));
-  showPreview(names, maxWidth, maxHeight);
+  showPreview(names, maxWidth);
   downloadSVG();
 }
 
