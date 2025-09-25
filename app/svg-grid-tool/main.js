@@ -78,10 +78,18 @@ svgInput.addEventListener('change', async (e) => {
   }
 });
 
+/**
+ * Show an error message to the user
+ * @param {string} message
+ */
 function showError(message) {
   alert(message);
 }
 
+/**
+ * Get the list of names from the textarea input
+ * @returns {string[]}
+ */
 function getNames() {
   const names = document.getElementById('names').value.split('\n').map(n => n.trim()).filter(Boolean);
   if (names.length === 0) {
@@ -90,6 +98,13 @@ function getNames() {
   return names;
 }
 
+/**
+ * Fit the text element's font size so the name fits within the max width
+ * @param {SVGTextElement} textEl
+ * @param {string} name
+ * @param {number} maxFontSizePx
+ * @param {number} maxNameWidthPx
+ */
 function fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx) {
   textEl.textContent = name;
   let fontSize = maxFontSizePx;
@@ -101,6 +116,11 @@ function fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx) {
   }
 }
 
+/**
+ * Set the text in the SVG clone and fit its size
+ * @param {SVGElement} svg
+ * @param {string} name
+ */
 function setTextAndFit(svg, name) {
   // Find the text element (assume only one)
   const textEl = svg.querySelector('text');
@@ -116,6 +136,11 @@ function setTextAndFit(svg, name) {
   fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx);
 }
 
+/**
+ * Get the bounding box of the template's children
+ * @param {SVGElement} svgTemplateDoc
+ * @returns {DOMRect}
+ */
 function getTemplateBBox(svgTemplateDoc) {
   const tempSvg = document.createElementNS(svgNS, 'svg');
   for (const child of Array.from(svgTemplateDoc.children)) {
@@ -131,6 +156,12 @@ function getTemplateBBox(svgTemplateDoc) {
   return bbox;
 }
 
+/**
+ * Create a normalized group for the template, translated so its bounding box starts at (0,0)
+ * @param {SVGElement} svgTemplateDoc
+ * @param {DOMRect} bbox
+ * @returns {SVGGElement}
+ */
 function createNormalizedTemplateGroup(svgTemplateDoc, bbox) {
   const innerG = document.createElementNS(svgNS, 'g');
   innerG.setAttribute('transform', `translate(${-bbox.x},${-bbox.y})`);
@@ -141,15 +172,20 @@ function createNormalizedTemplateGroup(svgTemplateDoc, bbox) {
   return innerG;
 }
 
+/**
+ * Build the SVG grid in the DOM for preview and download
+ * @param {string[]} names
+ * @param {number} maxWidth
+ * @param {number} maxHeight
+ * @returns {SVGElement}
+ */
 function buildLiveSVGGrid(names, maxWidth, maxHeight) {
   if (!svgTemplateDoc) {
     showError('Please upload an SVG template.');
     return;
   }
-
   // Normalize template: move all children so bounding box is at (0,0)
   const bbox = getTemplateBBox(svgTemplateDoc);
-
   // Get template size
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
   const templateHeight = parseFloat(svgTemplateDoc.getAttribute('height')) || 30;
@@ -162,7 +198,6 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
   const rows = Math.ceil(names.length / columns);
   const gridWidth = columns * cellWidth;
   const gridHeight = rows * cellHeight;
-
   // Create SVG root in preview
   const preview = document.getElementById('svg-preview');
   preview.innerHTML = '';
@@ -172,7 +207,6 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
   outSvg.setAttribute('viewBox', `0 0 ${gridWidth} ${gridHeight}`);
   outSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   preview.appendChild(outSvg);
-
   let offsetX = 0;
   let offsetY = 0;
   names.forEach((name, i) => {
@@ -189,16 +223,24 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     }
     g.setAttribute('transform', transform);
     outSvg.appendChild(g);
-
     setTextAndFit(g, name);
   });
   return outSvg;
 }
 
+/**
+ * Show the SVG grid preview
+ * @param {string[]} names
+ * @param {number} maxWidth
+ * @param {number} maxHeight
+ */
 function showPreview(names, maxWidth, maxHeight) {
   buildLiveSVGGrid(names, maxWidth, maxHeight);
 }
 
+/**
+ * Download the generated SVG grid as a file
+ */
 function downloadSVG() {
   const preview = document.getElementById('svg-preview');
   const svgEl = preview.querySelector('svg');
@@ -213,6 +255,7 @@ function downloadSVG() {
   link.style.display = 'inline-block';
 }
 
+// Generate button click handler
 document.getElementById('generate').addEventListener('click', () => {
   const names = getNames();
   const maxWidth = cmToPx(validateNumberInput('max-width', 0.1, 100, 10));
