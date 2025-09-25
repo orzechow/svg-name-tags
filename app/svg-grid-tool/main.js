@@ -72,8 +72,8 @@ function setTextAndFit(svg, name) {
   const dbg_w = textEl.getBBox().width;
 
   // Shrink font size until it fits within max name width
-  while (textEl.getBBox().width > maxNameWidthPx && fontSize > 5) {
-    fontSize -= 1;
+  while (textEl.getBBox().width > maxNameWidthPx && fontSize > 1) {
+    fontSize -= 0.2;
     textEl.style.fontSize = fontSize + 'px';
   }
 }
@@ -84,33 +84,25 @@ function convertTextToPath(svg) {
   // TODO: Integrate text-to-path conversion (client-side is complex)
 }
 
-function generateGridSVG(names, maxWidth, maxHeight) {
-  // --- Normalize template: move all children so bounding box is at (0,0) ---
-  // Create a temporary SVG to measure the bounding box
+function buildLiveSVGGrid(names, maxWidth, maxHeight) {
+  // Normalize template: move all children so bounding box is at (0,0)
   const tempSvg = document.createElementNS(svgNS, 'svg');
   for (const child of Array.from(svgTemplateDoc.children)) {
     const childClone = child.cloneNode(true);
     tempSvg.appendChild(childClone);
   }
-  document.body.appendChild(tempSvg); // Attach to DOM to getBBox
+  document.body.appendChild(tempSvg);
   let bbox = { x: 0, y: 0 };
   try {
     bbox = tempSvg.getBBox();
   } catch (e) {}
   document.body.removeChild(tempSvg);
 
-  // Now, for each clone, wrap children in a <g> and translate by -bbox.x, -bbox.y
-  if (!svgTemplateDoc) {
-    alert('Please upload an SVG template.');
-    return '';
-  }
   // Get template size
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
   const templateHeight = parseFloat(svgTemplateDoc.getAttribute('height')) || 30;
-  // Get user target width per clone (in px)
   const cloneWidthCm = parseFloat(document.getElementById('clone-width').value) || 3;
   const cloneWidth = cmToPx(cloneWidthCm);
-  // Calculate scale for each clone
   const scaleClone = cloneWidth / templateWidth;
   const cellWidth = cloneWidth;
   const cellHeight = templateHeight * scaleClone;
@@ -118,24 +110,22 @@ function generateGridSVG(names, maxWidth, maxHeight) {
   const rows = Math.ceil(names.length / columns);
   const gridWidth = columns * cellWidth;
   const gridHeight = rows * cellHeight;
-  // (Removed old scaleX/scaleY/scale for grid scaling)
-  // Create SVG root
+
+  // Create SVG root in preview
+  const preview = document.getElementById('svg-preview');
+  preview.innerHTML = '';
   const outSvg = document.createElementNS(svgNS, 'svg');
   outSvg.setAttribute('width', gridWidth);
   outSvg.setAttribute('height', gridHeight);
   outSvg.setAttribute('viewBox', `0 0 ${gridWidth} ${gridHeight}`);
   outSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  // Place each name
-  // Determine if scaling is needed based on viewBox vs width/height
-  // scaleX/scaleY not needed, use scaleClone for uniform scaling
-  // Optionally, offset grid to always start at (0,0)
+  preview.appendChild(outSvg);
+
   let offsetX = 0;
   let offsetY = 0;
-  // (If you want to center the grid in a larger area, set offsetX/Y here)
   names.forEach((name, i) => {
     const row = Math.floor(i / columns);
     const col = i % columns;
-    // Create a group for the normalized template
     const g = document.createElementNS(svgNS, 'g');
     const innerG = document.createElementNS(svgNS, 'g');
     innerG.setAttribute('transform', `translate(${-bbox.x},${-bbox.y})`);
@@ -144,9 +134,6 @@ function generateGridSVG(names, maxWidth, maxHeight) {
       innerG.appendChild(childClone);
     }
     g.appendChild(innerG);
-    setTextAndFit(g, name);
-    convertTextToPath(g);
-    // Place at grid position
     const tx = offsetX + col * cellWidth;
     const ty = offsetY + row * cellHeight;
     let transform = `translate(${tx},${ty})`;
@@ -155,16 +142,24 @@ function generateGridSVG(names, maxWidth, maxHeight) {
     }
     g.setAttribute('transform', transform);
     outSvg.appendChild(g);
+
+    setTextAndFit(g, name);
+    convertTextToPath(g);
   });
-  return outSvg.outerHTML;
+  return outSvg;
 }
 
-function showPreview(svgString) {
+function showPreview(names, maxWidth, maxHeight) {
+  buildLiveSVGGrid(names, maxWidth, maxHeight);
+}
+
+function downloadSVG() {
   const preview = document.getElementById('svg-preview');
-  preview.innerHTML = svgString;
-}
-
-function downloadSVG(svgString) {
+  const svgEl = preview.querySelector('svg');
+  if (!svgEl) return;
+  // Serialize SVG DOM to string
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svgEl);
   const blob = new Blob([svgString], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
   const link = document.getElementById('download-link');
@@ -176,9 +171,6 @@ document.getElementById('generate').addEventListener('click', () => {
   const names = getNames();
   const maxWidth = cmToPx(parseFloat(document.getElementById('max-width').value) || 10);
   const maxHeight = cmToPx(parseFloat(document.getElementById('max-height').value) || 5);
-  const svgString = generateGridSVG(names, maxWidth, maxHeight);
-  if (svgString) {
-    showPreview(svgString);
-    downloadSVG(svgString);
-  }
+  showPreview(names, maxWidth, maxHeight);
+  downloadSVG();
 });
