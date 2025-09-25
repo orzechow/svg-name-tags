@@ -184,9 +184,9 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     showError('Please upload an SVG template.');
     return;
   }
-  // Normalize template: move all children so bounding box is at (0,0)
+
+  // --- Get template and grid parameters ---
   const bbox = getTemplateBBox(svgTemplateDoc);
-  // Get template size
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
   const templateHeight = parseFloat(svgTemplateDoc.getAttribute('height')) || 30;
   const cloneWidthCm = validateNumberInput('clone-width', 0.1, 100, 3);
@@ -198,7 +198,8 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
   const rows = Math.ceil(names.length / columns);
   const gridWidth = columns * cellWidth;
   const gridHeight = rows * cellHeight;
-  // Create SVG root in preview
+
+  // --- Create SVG root ---
   const preview = document.getElementById('svg-preview');
   preview.innerHTML = '';
   const outSvg = document.createElementNS(svgNS, 'svg');
@@ -207,11 +208,15 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
   outSvg.setAttribute('viewBox', `0 0 ${gridWidth} ${gridHeight}`);
   outSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   preview.appendChild(outSvg);
+
+  // --- Place each name in the grid ---
   let offsetX = 0;
   let offsetY = 0;
   names.forEach((name, i) => {
     const row = Math.floor(i / columns);
     const col = i % columns;
+
+    // Create and position group for this clone
     const g = document.createElementNS(svgNS, 'g');
     const innerG = createNormalizedTemplateGroup(svgTemplateDoc, bbox);
     g.appendChild(innerG);
@@ -225,6 +230,7 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     outSvg.appendChild(g);
     setTextAndFit(g, name);
   });
+
   return outSvg;
 }
 
