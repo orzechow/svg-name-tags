@@ -13,6 +13,30 @@ svgInput.addEventListener('change', async (e) => {
   svgTemplateString = await file.text();
   const parser = new DOMParser();
   svgTemplateDoc = parser.parseFromString(svgTemplateString, 'image/svg+xml').documentElement;
+  // Find the text element and set max-name-width and max-font-size fields
+  const textEl = svgTemplateDoc.querySelector('text');
+  if (textEl) {
+    // Set max-font-size field to template font size (in cm)
+    const fontSizePx = parseFloat(textEl.getAttribute('font-size')) || 20;
+    const fontSizeCm = fontSizePx / 37.7952755906;
+    document.getElementById('max-font-size').value = fontSizeCm.toFixed(2);
+    document.getElementById('max-font-size').max = (fontSizeCm * 2).toFixed(2);
+
+    // Create a temp SVG to measure text width
+    const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const tempText = textEl.cloneNode(true);
+    tempSvg.appendChild(tempText);
+    document.body.appendChild(tempSvg);
+    let textWidth = 100;
+    try {
+      textWidth = tempText.getBBox().width;
+    } catch (err) { }
+    document.body.removeChild(tempSvg);
+    // Convert px to cm for the field
+    const textWidthCm = textWidth / 37.7952755906;
+    document.getElementById('max-name-width').value = textWidthCm.toFixed(2);
+    document.getElementById('max-name-width').max = (textWidthCm * 2).toFixed(2);
+  }
 });
 
 function getNames() {
@@ -31,17 +55,26 @@ function cloneSVGElement(el) {
 function setTextAndFit(svg, name) {
   // Find the text element (assume only one)
   const textEl = svg.querySelector('text');
-  if (!textEl) return;
+  if (!textEl) {
+    console.log('No text element found in SVG.');
+    return;
+  }
   textEl.textContent = name;
-  // Fit text size to bounding box (simple approach)
-  let fontSize = parseFloat(textEl.getAttribute('font-size')) || 20;
-  const maxWidth = textEl.getBBox().width || 100;
-  const maxHeight = textEl.getBBox().height || 30;
-  textEl.setAttribute('font-size', fontSize);
-  // Shrink font size until it fits
-  while ((textEl.getBBox().width > maxWidth || textEl.getBBox().height > maxHeight) && fontSize > 5) {
+  // Get user max font size and max name width (in cm)
+  const maxFontSizeCm = parseFloat(document.getElementById('max-font-size').value) || 1;
+  const maxNameWidthCm = parseFloat(document.getElementById('max-name-width').value) || 3;
+  const maxFontSizePx = cmToPx(maxFontSizeCm);
+  const maxNameWidthPx = cmToPx(maxNameWidthCm);
+  // Set initial font size to max
+  let fontSize = maxFontSizePx;
+  textEl.style.fontSize = fontSize + 'px';
+
+  const dbg_w = textEl.getBBox().width;
+
+  // Shrink font size until it fits within max name width
+  while (textEl.getBBox().width > maxNameWidthPx && fontSize > 5) {
     fontSize -= 1;
-    textEl.setAttribute('font-size', fontSize);
+    textEl.style.fontSize = fontSize + 'px';
   }
 }
 
