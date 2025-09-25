@@ -74,8 +74,7 @@ function setTextAndFit(svg, name) {
   fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx);
 }
 
-function buildLiveSVGGrid(names, maxWidth, maxHeight) {
-  // Normalize template: move all children so bounding box is at (0,0)
+function getTemplateBBox(svgTemplateDoc) {
   const tempSvg = document.createElementNS(svgNS, 'svg');
   for (const child of Array.from(svgTemplateDoc.children)) {
     const childClone = child.cloneNode(true);
@@ -87,6 +86,22 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     bbox = tempSvg.getBBox();
   } catch (e) {}
   document.body.removeChild(tempSvg);
+  return bbox;
+}
+
+function createNormalizedTemplateGroup(svgTemplateDoc, bbox) {
+  const innerG = document.createElementNS(svgNS, 'g');
+  innerG.setAttribute('transform', `translate(${-bbox.x},${-bbox.y})`);
+  for (const child of Array.from(svgTemplateDoc.children)) {
+    const childClone = child.cloneNode(true);
+    innerG.appendChild(childClone);
+  }
+  return innerG;
+}
+
+function buildLiveSVGGrid(names, maxWidth, maxHeight) {
+  // Normalize template: move all children so bounding box is at (0,0)
+  const bbox = getTemplateBBox(svgTemplateDoc);
 
   // Get template size
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
@@ -117,12 +132,7 @@ function buildLiveSVGGrid(names, maxWidth, maxHeight) {
     const row = Math.floor(i / columns);
     const col = i % columns;
     const g = document.createElementNS(svgNS, 'g');
-    const innerG = document.createElementNS(svgNS, 'g');
-    innerG.setAttribute('transform', `translate(${-bbox.x},${-bbox.y})`);
-    for (const child of Array.from(svgTemplateDoc.children)) {
-      const childClone = child.cloneNode(true);
-      innerG.appendChild(childClone);
-    }
+    const innerG = createNormalizedTemplateGroup(svgTemplateDoc, bbox);
     g.appendChild(innerG);
     const tx = offsetX + col * cellWidth;
     const ty = offsetY + row * cellHeight;
