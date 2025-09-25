@@ -5,6 +5,45 @@ let svgTemplateString = '';
 let svgTemplateDoc = null;
 const svgNS = 'http://www.w3.org/2000/svg';
 
+// --- Utility Functions ---
+// SVG px/cm conversion factor
+const SVG_PX_PER_CM = 37.7952755906;
+
+/**
+ * Convert centimeters to pixels (SVG standard)
+ * @param {number} cm
+ * @returns {number}
+ */
+function cmToPx(cm) {
+  return cm * SVG_PX_PER_CM;
+}
+
+/**
+ * Convert pixels to centimeters (SVG standard)
+ * @param {number} px
+ * @returns {number}
+ */
+function pxToCm(px) {
+  return px / SVG_PX_PER_CM;
+}
+
+/**
+ * Validate a numeric input field and return a safe value
+ * @param {string} id - Input field id
+ * @param {number} min - Minimum allowed value
+ * @param {number} max - Maximum allowed value
+ * @param {number} fallback - Fallback value if invalid
+ * @returns {number}
+ */
+function validateNumberInput(id, min, max, fallback) {
+  const val = parseFloat(document.getElementById(id).value);
+  if (isNaN(val) || val < min || val > max) {
+    showError(`Invalid value for ${id.replace('-', ' ')}. Using fallback: ${fallback}`);
+    return fallback;
+  }
+  return val;
+}
+
 // Handle SVG template upload
 const svgInput = document.getElementById('svg-template');
 svgInput.addEventListener('change', async (e) => {
@@ -49,16 +88,6 @@ function getNames() {
     showError('Please enter at least one name.');
   }
   return names;
-}
-
-function cmToPx(cm) {
-  // 1cm = 37.7952755906px (SVG standard)
-  return cm * 37.7952755906;
-}
-
-function pxToCm(px) {
-  // 1cm = 37.7952755906px (SVG standard)
-  return px / 37.7952755906;
 }
 
 function fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx) {
@@ -182,15 +211,6 @@ function downloadSVG() {
   const link = document.getElementById('download-link');
   link.href = url;
   link.style.display = 'inline-block';
-}
-
-function validateNumberInput(id, min, max, fallback) {
-  const val = parseFloat(document.getElementById(id).value);
-  if (isNaN(val) || val < min || val > max) {
-    showError(`Invalid value for ${id.replace('-', ' ')}. Using fallback: ${fallback}`);
-    return fallback;
-  }
-  return val;
 }
 
 document.getElementById('generate').addEventListener('click', () => {
