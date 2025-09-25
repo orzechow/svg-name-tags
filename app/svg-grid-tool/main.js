@@ -76,6 +76,8 @@ svgInput.addEventListener('change', async (e) => {
     document.getElementById('max-name-width').value = textWidthCm.toFixed(2);
     document.getElementById('max-name-width').max = (textWidthCm * 2).toFixed(2);
   }
+
+  updateSVGGrid();
 });
 
 /**
@@ -261,11 +263,25 @@ function downloadSVG() {
   link.style.display = 'inline-block';
 }
 
-// Generate button click handler
-document.getElementById('generate').addEventListener('click', () => {
+// Auto-update setup
+function setupAutoUpdate() {
+  const inputIds = [
+    'names', 'max-width', 'max-height', 'clone-width', 'max-font-size', 'max-name-width'
+  ];
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', updateSVGGrid);
+  });
+}
+
+function updateSVGGrid() {
   const names = getNames();
   const maxWidth = cmToPx(validateNumberInput('max-width', 0.1, 100, 10));
   const maxHeight = cmToPx(validateNumberInput('max-height', 0.1, 100, 5));
   showPreview(names, maxWidth, maxHeight);
   downloadSVG();
-});
+}
+
+// Initialize auto-update on page load
+window.addEventListener('DOMContentLoaded', setupAutoUpdate);
