@@ -6,11 +6,11 @@ let svgTemplateDoc = null;
 const svgNS = 'http://www.w3.org/2000/svg';
 
 // --- Utility Functions ---
-// SVG px/cm conversion factor
-const SVG_PX_PER_CM = 37.7952755906;
-const MAX_GRID_WIDTH_CM = 300;
-const MAX_FONT_SIZE = 2;
-const MAX_NAME_WIDTH = 5;
+const SVG_PX_PER_CM = 37.7952755906;  // SVG px/cm conversion factor
+const MAX_GRID_WIDTH_CM = Infinity;   // Maximum grid width in cm
+const MAX_CLONE_WIDTH_CM = Infinity;  // Maximum clone width in cm
+let MAX_FONT_SIZE_CM = 2;             // Will be set based on template
+const MAX_NAME_WIDTH = 1;             // Maximum fraction of clone width that the name can occupy
 
 /**
  * Convert centimeters to pixels (SVG standard)
@@ -60,32 +60,35 @@ const svgInput = document.getElementById('svg-template');
 svgInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
+
   svgTemplateString = await file.text();
   const parser = new DOMParser();
   svgTemplateDoc = parser.parseFromString(svgTemplateString, 'image/svg+xml').documentElement;
-  // Find the text element and set max-name-width and max-font-size fields
+
+  // Find the text element and set max-font-size field
   const textEl = svgTemplateDoc.querySelector('text');
   if (textEl) {
     // Set max-font-size field to template font size (in cm)
     const fontSizePx = parseFloat(textEl.getAttribute('font-size')) || 20;
     const fontSizeCm = pxToCm(fontSizePx);
-    document.getElementById('max-font-size').value = fontSizeCm.toFixed(2);
-    document.getElementById('max-font-size').max = (fontSizeCm * 2).toFixed(2);
+    MAX_FONT_SIZE_CM = fontSizeCm * 2;
 
-    // Create a temp SVG to measure text width
-    const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const tempText = textEl.cloneNode(true);
-    tempSvg.appendChild(tempText);
-    document.body.appendChild(tempSvg);
-    let textWidth = 100;
+    document.getElementById('max-font-size').value = fontSizeCm.toFixed(2);
+    document.getElementById('max-font-size').max = MAX_FONT_SIZE_CM.toFixed(2);
+
+    // Set max-name-width field to template text width (as fraction of template width)
+    document.body.appendChild(svgTemplateDoc);
+
+    let textScale = 0.2;
     try {
-      textWidth = tempText.getBBox().width;
+      const templateWidth = svgTemplateDoc.getBoundingClientRect().width;
+      const textWidth = textEl.getBoundingClientRect().width;
+      textScale = textWidth / templateWidth;
     } catch (err) { }
-    document.body.removeChild(tempSvg);
-    // Convert px to cm for the field
-    const textWidthCm = pxToCm(textWidth);
-    document.getElementById('max-name-width').value = textWidthCm.toFixed(2);
-    document.getElementById('max-name-width').max = (textWidthCm * 2).toFixed(2);
+
+    document.getElementById('max-name-width').value = textScale.toFixed(2);
+
+    document.body.removeChild(svgTemplateDoc);
   }
 
   updateSVGGrid();
@@ -122,9 +125,10 @@ function fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx) {
   textEl.textContent = name;
   let fontSize = maxFontSizePx;
   textEl.style.fontSize = fontSize + 'px';
+
   // Shrink font size until it fits within max name width
-  while (textEl.getBBox().width > maxNameWidthPx && fontSize > 1) {
-    fontSize -= 0.2;
+  while (textEl.getBoundingClientRect().width > maxNameWidthPx && fontSize > 1) {
+    fontSize *= 0.95;
     textEl.style.fontSize = fontSize + 'px';
   }
 }
@@ -142,11 +146,13 @@ function setTextAndFit(svg, name) {
     return;
   }
   // Get user max font size and max name width (not exactly in cm, as it does not consider scaling)
-  const maxFontSize = validateNumberInput('max-font-size', 0.1, 100, MAX_FONT_SIZE);
-  const maxNameWidth = validateNumberInput('max-name-width', 0.1, 100, MAX_NAME_WIDTH);
+  const maxFontSize = validateNumberInput('max-font-size', 0.1, MAX_FONT_SIZE_CM, 10);
+  const maxNameWidth = validateNumberInput('max-name-width', 0.1, MAX_NAME_WIDTH, 5);
   const maxFontSizePx = cmToPx(maxFontSize);
-  const maxNameWidthPx = cmToPx(maxNameWidth);
-  fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx);
+
+  const cloneWidthPx = svg.getBoundingClientRect().width;
+
+  fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidth * cloneWidthPx);
 }
 
 /**
@@ -201,7 +207,7 @@ function buildLiveSVGGrid(names, maxWidth) {
   const bbox = getTemplateBBox(svgTemplateDoc);
   const templateWidth = parseFloat(svgTemplateDoc.getAttribute('width')) || 100;
   const templateHeight = parseFloat(svgTemplateDoc.getAttribute('height')) || 30;
-  const cloneWidthCm = validateNumberInput('clone-width', 0.1, 100, 3);
+  const cloneWidthCm = validateNumberInput('clone-width', 0.1, MAX_CLONE_WIDTH_CM, 3);
   const cloneWidth = cmToPx(cloneWidthCm);
   const scaleClone = cloneWidth / templateWidth;
   const cellWidth = cloneWidth;
