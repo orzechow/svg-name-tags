@@ -272,7 +272,7 @@ function downloadSVG() {
 // Auto-update setup
 function setupAutoUpdate() {
   const inputIds = [
-    'names', 'max-width', 'clone-width', 'max-font-size', 'max-name-width'
+    'names', 'max-grid-width', 'clone-width', 'max-font-size', 'max-name-width'
   ];
   inputIds.forEach(id => {
     const el = document.getElementById(id);
@@ -283,7 +283,7 @@ function setupAutoUpdate() {
 
 function updateSVGGrid() {
   const names = getNames();
-  const maxWidth = cmToPx(validateNumberInput('max-width', 0.1, 100, 10));
+  const maxWidth = cmToPx(validateNumberInput('max-grid-width', 0.1, 100, 10));
   showPreview(names, maxWidth);
   downloadSVG();
 }

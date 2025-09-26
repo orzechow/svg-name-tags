@@ -72,7 +72,7 @@ footer,
 header,
 main {
   margin: 0 auto;
-  max-width: var(--width-content);
+  max-grid-width: var(--width-content);
   padding: 3rem 1rem;
 }
 
@@ -92,7 +92,7 @@ section {
 
 section img,
 article img {
-  max-width: 100%;
+  max-grid-width: 100%;
 }
 
 section pre {
@@ -202,7 +202,7 @@ nav ul li ul li a {
 }
 
 /* Nav for Mobile */
-@media (max-width: 768px) {
+@media (max-grid-width: 768px) {
   nav {
     flex-wrap: wrap;
   }
@@ -266,14 +266,14 @@ p {
 
 pre {
   margin: 1rem 0;
-  max-width: var(--width-card-wide);
+  max-grid-width: var(--width-card-wide);
   padding: 1rem 0;
 }
 
 pre code,
 pre samp {
   display: block;
-  max-width: var(--width-card-wide);
+  max-grid-width: var(--width-card-wide);
   padding: 0.5rem 2rem;
   white-space: pre-wrap;
 }
@@ -370,7 +370,7 @@ figure {
 }
 
 figure img {
-  max-width: 100%;
+  max-grid-width: 100%;
 }
 
 figure figcaption {
@@ -396,7 +396,7 @@ form {
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow) var(--color-shadow);
   display: block;
-  max-width: var(--width-card-wide);
+  max-grid-width: var(--width-card-wide);
   min-width: var(--width-card);
   padding: 1.5rem;
   text-align: var(--justify-normal);
@@ -413,7 +413,7 @@ select,
 textarea {
   display: block;
   font-size: inherit;
-  max-width: var(--width-card-wide);
+  max-grid-width: var(--width-card-wide);
 }
 
 input[type="checkbox"],
@@ -461,7 +461,7 @@ label {
 
 /* Popups */
 dialog {
-  max-width: 90%;
+  max-grid-width: 90%;
   max-height: 85dvh;
   margin: auto;
   padding-block: 0;
@@ -491,7 +491,7 @@ dialog::-webkit-scrollbar-thumb {
 
 @media (min-width: 650px) {
   dialog {
-    max-width: 39rem;
+    max-grid-width: 39rem;
   }
 }
 
@@ -521,7 +521,7 @@ table {
   border-radius: var(--border-radius);
   border-spacing: 0;
   display: inline-block;
-  max-width: 100%;
+  max-grid-width: 100%;
   overflow-x: auto;
   padding: 0;
   white-space: nowrap;
@@ -566,7 +566,7 @@ blockquote {
   font-size: x-large;
   line-height: var(--line-height);
   margin: 1rem auto;
-  max-width: var(--width-card-medium);
+  max-grid-width: var(--width-card-medium);
   padding: 1.5rem 1rem;
   text-align: var(--justify-important);
 }
