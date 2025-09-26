@@ -56,12 +56,20 @@ function validateNumberInput(id, min, max, fallback) {
 }
 
 // Handle SVG template upload
+let templateFileName = 'names-grid.svg';
 const svgInput = document.getElementById('svg-template');
 svgInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
   svgTemplateString = await file.text();
+  // Set template file name for download
+  if (file.name) {
+    const dotIdx = file.name.lastIndexOf('.');
+    const baseName = dotIdx > 0 ? file.name.slice(0, dotIdx) : file.name;
+    templateFileName = baseName + '-name-tags.svg';
+    document.getElementById('download-link').setAttribute('download', templateFileName);
+  }
   const parser = new DOMParser();
   svgTemplateDoc = parser.parseFromString(svgTemplateString, 'image/svg+xml').documentElement;
 
@@ -275,6 +283,7 @@ function downloadSVG() {
   const url = URL.createObjectURL(blob);
   const link = document.getElementById('download-link');
   link.href = url;
+  link.setAttribute('download', templateFileName);
   link.style.display = 'inline-block';
 }
 
