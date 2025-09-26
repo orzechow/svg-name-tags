@@ -8,6 +8,9 @@ const svgNS = 'http://www.w3.org/2000/svg';
 // --- Utility Functions ---
 // SVG px/cm conversion factor
 const SVG_PX_PER_CM = 37.7952755906;
+const MAX_GRID_WIDTH_CM = 300;
+const MAX_FONT_SIZE = 2;
+const MAX_NAME_WIDTH = 5;
 
 /**
  * Convert centimeters to pixels (SVG standard)
@@ -138,11 +141,11 @@ function setTextAndFit(svg, name) {
     showError('No text element found in SVG template.');
     return;
   }
-  // Get user max font size and max name width (in cm)
-  const maxFontSizeCm = validateNumberInput('max-font-size', 0.1, 100, 1);
-  const maxNameWidthCm = validateNumberInput('max-name-width', 0.1, 100, 3);
-  const maxFontSizePx = cmToPx(maxFontSizeCm);
-  const maxNameWidthPx = cmToPx(maxNameWidthCm);
+  // Get user max font size and max name width (not exactly in cm, as it does not consider scaling)
+  const maxFontSize = validateNumberInput('max-font-size', 0.1, 100, MAX_FONT_SIZE);
+  const maxNameWidth = validateNumberInput('max-name-width', 0.1, 100, MAX_NAME_WIDTH);
+  const maxFontSizePx = cmToPx(maxFontSize);
+  const maxNameWidthPx = cmToPx(maxNameWidth);
   fitTextToWidth(textEl, name, maxFontSizePx, maxNameWidthPx);
 }
 
@@ -283,7 +286,7 @@ function setupAutoUpdate() {
 
 function updateSVGGrid() {
   const names = getNames();
-  const maxWidth = cmToPx(validateNumberInput('max-grid-width', 0.1, 100, 10));
+  const maxWidth = cmToPx(validateNumberInput('max-grid-width', 0.1, MAX_GRID_WIDTH_CM, 10));
   showPreview(names, maxWidth);
   downloadSVG();
 }
